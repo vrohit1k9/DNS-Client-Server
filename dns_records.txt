@@ -1,0 +1,34 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# dns_records.txt  –  Custom DNS Server Records File
+# ─────────────────────────────────────────────────────────────────────────────
+# Format  :  <domain>=<ip-address>
+# Rules   :  • One record per line
+#            • Domain names are case-insensitive (stored in lower-case)
+#            • Lines starting with '#' are comments (ignored)
+#            • Blank lines are ignored
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Well-known public domains ─────────────────────────────────────────────────
+google.com=142.250.195.14
+example.com=93.184.216.34
+openai.com=104.18.32.47
+github.com=140.82.121.4
+stackoverflow.com=151.101.193.69
+wikipedia.org=208.80.154.224
+amazon.com=176.32.103.205
+microsoft.com=20.112.52.29
+apple.com=17.253.144.10
+facebook.com=157.240.221.35
+
+# ── Local / private entries ───────────────────────────────────────────────────
+localhost=127.0.0.1
+server.local=192.168.1.10
+db.local=192.168.1.20
+api.local=192.168.1.30
+mail.local=192.168.1.40
+
+# ── Educational examples ──────────────────────────────────────────────────────
+mywebsite.com=203.0.113.10
+testserver.com=198.51.100.5
+college.edu=10.0.0.1
+premierleague.com=212.58.237.252
