@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Custom DNS Client-Server System with TTL In-Memory Caching and MongoDB Atlas Persistent Storage.">
+  <meta name="theme-color" content="#0a0f1d">
+  <title>Custom DNS Server & Client Dashboard | MongoDB Atlas Integration</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f2fe'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z'/></svg>">
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- ── Header ────────────────────────────────────────────────────────── -->
+    <header class="app-header">
+      <div class="brand-wrapper">
+        <div class="brand-icon">🌐</div>
+        <div class="brand-title">
+          <h1>Custom DNS Server & Client</h1>
+          <div class="brand-subtitle">High-Performance UDP Resolver with MongoDB Atlas Persistent History</div>
+        </div>
+      </div>
+
+      <div class="header-status-group">
+        <div id="backend-status-badge" class="status-badge online">
+          <span class="status-dot"></span>
+          <span>MongoDB Atlas: ONLINE</span>
+        </div>
+        <div class="status-badge info">
+          <span class="status-dot"></span>
+          <span>UDP Port: 5454</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ── Key Metrics ───────────────────────────────────────────────────── -->
+    <section class="metrics-grid" aria-label="System Metrics">
+      <div class="metric-card">
+        <div class="metric-header">
+          <span class="metric-label">Total Queries</span>
+          <span class="metric-icon">📊</span>
+        </div>
+        <div class="metric-value" id="metric-total-queries">142</div>
+        <div class="metric-footer">Resolved via 3-Tier Pipeline</div>
+      </div>
+
+      <div class="metric-card green">
+        <div class="metric-header">
+          <span class="metric-label">Cache Hit Ratio</span>
+          <span class="metric-icon">⚡</span>
+        </div>
+        <div class="metric-value" id="metric-hit-rate">72%</div>
+        <div class="metric-footer">Sub-millisecond latency lookup</div>
+      </div>
+
+      <div class="metric-card alt">
+        <div class="metric-header">
+          <span class="metric-label">Active TTL Entries</span>
+          <span class="metric-icon">⏱️</span>
+        </div>
+        <div class="metric-value" id="metric-cache-entries">3</div>
+        <div class="metric-footer">Self-expiring in-memory cache</div>
+      </div>
+
+      <div class="metric-card amber">
+        <div class="metric-header">
+          <span class="metric-label">MongoDB History</span>
+          <span class="metric-icon">🍃</span>
+        </div>
+        <div class="metric-value" id="metric-mongo-records">25</div>
+        <div class="metric-footer">Cloud Atlas persistent collection</div>
+      </div>
+    </section>
+
+    <!-- ── Main Grid: Query Console & Cache Viewer ──────────────────────── -->
+    <div class="main-grid">
+
+      <!-- Query Console -->
+      <section class="card" aria-label="DNS Resolution Engine">
+        <div class="card-title-bar">
+          <h2><span>🔍</span> Interactive DNS Query Console</h2>
+          <span class="badge-pill">3-Tier Priority Resolver</span>
+        </div>
+
+        <form id="dns-search-form" class="search-form">
+          <div class="search-input-wrapper">
+            <span class="search-icon-inside">⚡</span>
+            <input 
+              type="text" 
+              id="dns-domain-input" 
+              placeholder="Enter domain name (e.g. google.com, github.com, vtop.vit.ac.in)..." 
+              autocomplete="off"
+              required>
+          </div>
+          <button type="submit" id="btn-submit-dns" class="btn-primary">
+            <span>Query DNS</span>
+            <span>→</span>
+          </button>
+        </form>
+
+        <div class="quick-tags">
+          <span class="quick-tags-label">Quick Test:</span>
+          <button type="button" class="tag-btn" onclick="quickQuery('google.com')">google.com</button>
+          <button type="button" class="tag-btn" onclick="quickQuery('github.com')">github.com</button>
+          <button type="button" class="tag-btn" onclick="quickQuery('vtop.vit.ac.in')">vtop.vit.ac.in</button>
+          <button type="button" class="tag-btn" onclick="quickQuery('irctc.co.in')">irctc.co.in</button>
+          <button type="button" class="tag-btn" onclick="quickQuery('localhost')">localhost</button>
+          <button type="button" class="tag-btn" onclick="quickQuery('openai.com')">openai.com</button>
+        </div>
+
+        <!-- 3-Tier Resolution Pipeline -->
+        <div class="pipeline-box">
+          <div class="pipeline-title">
+            <span>Lookup Resolution Flow</span>
+            <span style="color: var(--cyan);">Cache First → Mongo Second → Upstream Third</span>
+          </div>
+          <div class="pipeline-nodes">
+            <div id="pipe-cache" class="pipe-node">
+              <div class="node-tier">Tier 1</div>
+              <div class="node-name">TTL Cache</div>
+              <div class="node-badge">&lt; 1 ms</div>
+            </div>
+            <div class="pipe-arrow">➔</div>
+            <div id="pipe-mongo" class="pipe-node">
+              <div class="node-tier">Tier 2</div>
+              <div class="node-name">MongoDB Atlas</div>
+              <div class="node-badge">~12 ms</div>
+            </div>
+            <div class="pipe-arrow">➔</div>
+            <div id="pipe-upstream" class="pipe-node">
+              <div class="node-tier">Tier 3</div>
+              <div class="node-name">Authoritative DNS</div>
+              <div class="node-badge">~45 ms</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Query Result Card -->
+        <div id="result-card" class="query-result-card" style="display: none;"></div>
+      </section>
+
+      <!-- In-Memory Cache Visualizer -->
+      <section class="card" aria-label="Cache Visualizer">
+        <div class="card-title-bar">
+          <h2><span>⏱️</span> In-Memory Cache Visualizer</h2>
+          <button type="button" id="btn-clear-cache" class="btn-ghost" title="Clear all active cache entries">
+            <span>🗑️ Flush Cache</span>
+          </button>
+        </div>
+        <p style="font-size: 12px; color: var(--text-dim); margin-bottom: 14px;">
+          Entries expire automatically when TTL reaches 0. Re-querying an entry resets its TTL countdown.
+        </p>
+        <div id="cache-list" class="cache-list"></div>
+      </section>
+
+    </div>
+
+    <!-- ── Architecture Visualizer ───────────────────────────────────────── -->
+    <section class="architecture-box" aria-label="System Architecture">
+      <div class="card-title-bar" style="margin-bottom: 12px;">
+        <h2><span>🏗️</span> Multi-Tier DNS Architecture</h2>
+        <span class="badge-pill">Enterprise Resilience Pattern</span>
+      </div>
+      <div class="arch-flow">
+        <div class="arch-node">
+          <div class="arch-icon">💻</div>
+          <div class="arch-name">Client Layer</div>
+          <div class="arch-desc">DNSClient / GUI / Browser using UDP / HTTP</div>
+        </div>
+        <div class="arch-arrow">➔</div>
+        <div class="arch-node">
+          <div class="arch-icon">⚡</div>
+          <div class="arch-name">DNSServer (Port 5454)</div>
+          <div class="arch-desc">Multi-threaded UDP Socket dispatcher</div>
+        </div>
+        <div class="arch-arrow">➔</div>
+        <div class="arch-node">
+          <div class="arch-icon">🧠</div>
+          <div class="arch-name">In-Memory TTL Cache</div>
+          <div class="arch-desc">Sub-millisecond RAM store with timestamp evictions</div>
+        </div>
+        <div class="arch-arrow">➔</div>
+        <div class="arch-node">
+          <div class="arch-icon">🍃</div>
+          <div class="arch-name">MongoDB Atlas Cluster</div>
+          <div class="arch-desc">Search counts, timestamps & CSV Fallback offline</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── MongoDB Atlas Search History ──────────────────────────────────── -->
+    <section class="table-section card" aria-label="MongoDB Search History">
+      <div class="table-toolbar">
+        <div>
+          <h2><span>🍃</span> MongoDB Atlas Persistent Search History</h2>
+          <div style="font-size: 12px; color: var(--text-dim); margin-top: 4px;">
+            Synchronized with <code style="color: var(--cyan); font-family: var(--font-mono);">custom_dns.search_history</code> collection
+          </div>
+        </div>
+        <input 
+          type="text" 
+          id="history-filter" 
+          class="table-filter-input" 
+          placeholder="Filter domains, IPs, sources..." 
+          aria-label="Filter records">
+      </div>
+
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Domain</th>
+              <th>Resolved IP</th>
+              <th>Search Count</th>
+              <th>Last Searched</th>
+              <th>Source</th>
+            </tr>
+          </thead>
+          <tbody id="history-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── Benchmark & Stress Test ───────────────────────────────────────── -->
+    <section class="benchmark-grid">
+      <div class="card">
+        <div class="card-title-bar">
+          <h2><span>🚀</span> Cache Stress Test Simulation</h2>
+          <span class="badge-pill">Performance Verification</span>
+        </div>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">
+          Simulate 50 rapid sequential lookups across popular domains to benchmark hit rates, eviction behavior, and caching speedup.
+        </p>
+        <button type="button" id="btn-run-stress" class="btn-primary" style="width: 100%; justify-content: center;">
+          🚀 Run 50-Query Stress Test
+        </button>
+
+        <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border-subtle);">
+          <div class="stat-row">
+            <span style="color: var(--text-dim);">Total Execution Time:</span>
+            <span id="stress-total-time" style="font-weight: 700; font-family: var(--font-mono); color: var(--cyan);">--</span>
+          </div>
+          <div class="stat-row">
+            <span style="color: var(--text-dim);">Simulated Hit Ratio:</span>
+            <span id="stress-hit-ratio" style="font-weight: 700; font-family: var(--font-mono); color: var(--green);">--</span>
+          </div>
+          <div class="stat-row">
+            <span style="color: var(--text-dim);">Performance Speedup:</span>
+            <span id="stress-speedup" style="font-weight: 700; font-family: var(--font-mono); color: var(--amber);">--</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title-bar">
+          <h2><span>⚙️</span> Local Backend Integration</h2>
+          <span class="badge-pill">CLI &amp; Java Commands</span>
+        </div>
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+          Run your Java server and GUI client locally using the following PowerShell commands:
+        </p>
+        <div style="background: rgba(10, 16, 30, 0.85); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; font-family: var(--font-mono); font-size: 12px; line-height: 1.8;">
+          <div style="color: var(--text-dim);"># 1. Start DNS Server on UDP 5454:</div>
+          <div style="color: var(--cyan);">java -cp "lib/*;." DNSServer</div>
+          <div style="color: var(--text-dim); margin-top: 6px;"># 2. Launch GUI Dashboard:</div>
+          <div style="color: var(--cyan);">java -cp "lib/*;." DNSGui</div>
+          <div style="color: var(--text-dim); margin-top: 6px;"># 3. Start Local Web Server API:</div>
+          <div style="color: var(--cyan);">java -cp "lib/*;." DNSWebServer</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Footer ────────────────────────────────────────────────────────── -->
+    <footer class="app-footer">
+      <p>Custom DNS Client-Server Project &bull; MongoDB Atlas Cloud Storage &bull; In-Memory TTL Cache Engine</p>
+      <p style="margin-top: 6px;">
+        Repository: <a href="https://github.com/vrohit1k9/DNS-Client-Server" target="_blank" rel="noopener">vrohit1k9/DNS-Client-Server</a>
+      </p>
+    </footer>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
