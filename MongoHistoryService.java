@@ -74,15 +74,40 @@ public class MongoHistoryService {
         Logger.getLogger("com.mongodb").setLevel(Level.OFF);
     }
 
+    private static String getEnvOrDotEnv(String key, String defaultValue) {
+        String val = System.getenv(key);
+        if (val != null && !val.trim().isEmpty()) {
+            return val.trim();
+        }
+        File envFile = new File(".env");
+        if (envFile.exists()) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(envFile))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    line = line.trim();
+                    if (line.isEmpty() || line.startsWith("#")) continue;
+                    int eq = line.indexOf('=');
+                    if (eq > 0) {
+                        String k = line.substring(0, eq).trim();
+                        if (k.equalsIgnoreCase(key)) {
+                            String v = line.substring(eq + 1).trim();
+                            if ((v.startsWith("\"") && v.endsWith("\"")) || (v.startsWith("'") && v.endsWith("'"))) {
+                                v = v.substring(1, v.length() - 1);
+                            }
+                            return v;
+                        }
+                    }
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        return defaultValue;
+    }
+
     private MongoHistoryService() {
-        String envUri = System.getenv("MONGODB_URI");
-        this.uri = (envUri != null && !envUri.trim().isEmpty()) ? envUri.trim() : "mongodb://localhost:27017";
-
-        String envDb = System.getenv("MONGODB_DATABASE");
-        this.dbName = (envDb != null && !envDb.trim().isEmpty()) ? envDb.trim() : "custom_dns";
-
-        String envColl = System.getenv("MONGODB_COLLECTION");
-        this.collectionName = (envColl != null && !envColl.trim().isEmpty()) ? envColl.trim() : "search_history";
+        this.uri = getEnvOrDotEnv("MONGODB_URI", "mongodb://localhost:27017");
+        this.dbName = getEnvOrDotEnv("MONGODB_DATABASE", "custom_dns");
+        this.collectionName = getEnvOrDotEnv("MONGODB_COLLECTION", "search_history");
 
         // Load local file persistence first
         loadLocalHistoryCsv();
