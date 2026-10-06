@@ -54,7 +54,7 @@ const STATIC_RECORDS = {
 // ── Application State ────────────────────────────────────────────────────────
 const state = {
   isLocalBackendConnected: false,
-  backendUrl: 'http://localhost:8080',
+  backendUrl: 'http://localhost:8090',
   totalQueries: 142,
   cacheHits: 89,
   mongoHits: 36,
@@ -120,7 +120,7 @@ async function checkBackendHealth() {
       const data = await res.json();
       state.isLocalBackendConnected = true;
       badge.className = 'status-badge online';
-      badge.innerHTML = `<span class="status-dot"></span> Java & Mongo Atlas: ONLINE (Port 8080)`;
+      badge.innerHTML = `<span class="status-dot"></span> Java & Mongo Atlas: ONLINE (Port 8090)`;
       return;
     }
   } catch (err) {

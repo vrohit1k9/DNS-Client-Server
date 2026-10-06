@@ -27,7 +27,7 @@ import java.util.*;
  */
 public class DNSWebServer {
 
-    private static final int HTTP_PORT = 8080;
+    private static final int HTTP_PORT = 8090;
     private static DNSCache cache;
     private static MongoHistoryService mongo;
 
